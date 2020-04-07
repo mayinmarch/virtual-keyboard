@@ -73,10 +73,12 @@ window.onload = function(){
             {type: 'rightArrow'}
         ]
     ];
-    
+
     let textField = createTextField();
     textField.focus();
     createKey(layout, textField);
+    let storage = window.localStorage;
+    storage.setItem('language', 'eng');
 }
 
 class Key {
@@ -120,18 +122,23 @@ class Key {
             this.createKeyNode('↓', 'bottom-arrow');
             break;
         case 'general':
-            let generalKey = document.createElement('p');
+            let generalKeyRu = document.createElement('span');
+            let generalKeyEng = document.createElement('span');
+            generalKeyRu.innerHTML = this.keyValue.primaryValueRu;
+            generalKeyEng.innerHTML = this.keyValue.primaryValueEng;
+            this.container.appendChild(generalKeyRu);
+            this.container.appendChild(generalKeyEng);
             this.container.classList.add('general');
             if('className' in this.keyValue){
                 this.container.classList.add(this.keyValue.className);
             }
             if(this.language === 'ru'){
-                generalKey.innerHTML = this.keyValue.primaryValueRu;
+               generalKeyEng.classList.add('hidden');
             }
             if(this.language === 'eng'){
-                generalKey.innerHTML = this.keyValue.primaryValueEng;
+                generalKeyRu.classList.add('hidden');
             }
-            this.container.appendChild(generalKey);
+            
             break; 
         }
 
@@ -147,11 +154,13 @@ class Key {
     onKeyHandler(){
         let currantCaretPosition = this.textField.selectionStart;
         let outputText =  this.textField.value;
+        let shift = document.querySelector('.shift');
+
         switch (this.keyValue.type){
         case 'general':
-            let shift = document.querySelector('.shift');
             let capsLock = document.querySelector('.caps-lock')
             let charToInsert = '';
+            this.language = window.localStorage.getItem('language');
             
             if(this.language === 'eng') {
                 if(shift.classList.contains('active') || capsLock.classList.contains('active')){
@@ -212,9 +221,34 @@ class Key {
             currantCaretPosition = this.textField.selectionStart;
         }
             break;
-        }
-        
 
+        case 'alt': 
+            let generalKeys = document.querySelectorAll('.general span');
+            if( shift.classList.contains('active')){
+                if(this.language === 'eng'){
+                    this.language = 'ru';
+                    window.localStorage.setItem('language', 'ru');
+                    generalKeys.forEach((elem) => {
+                        if(elem.classList.contains('hidden')){
+                            elem.classList.remove('hidden');
+                        }else{
+                            elem.classList.add('hidden');
+                        }
+                    })
+                } else {
+                    this.language = 'eng';
+                    window.localStorage.setItem('language', 'eng');
+                    generalKeys.forEach((elem) => {
+                        if(elem.classList.contains('hidden')){
+                            elem.classList.remove('hidden');
+                        }else{
+                            elem.classList.add('hidden');
+                        }
+                    })
+                }
+            }
+            break;
+        }
     }
         
     changeActiveState(){
@@ -247,7 +281,7 @@ const createKey = function(layout, textField){
         line.classList.add('line');
         document.body.appendChild(line);
         element.forEach(key => {
-            let keyButton = new Key(key, 'eng', textField);
+            let keyButton = new Key(key, window.localStorage.getItem('language'), textField);
             line.appendChild(keyButton.createKeyContainer());
         })        
     });
