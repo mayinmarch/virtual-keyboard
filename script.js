@@ -73,9 +73,10 @@ window.onload = function(){
             {type: 'rightArrow'}
         ]
     ];
+    
     let textField = createTextField();
+    textField.focus();
     createKey(layout, textField);
-
 }
 
 class Key {
@@ -88,6 +89,9 @@ class Key {
     createKeyContainer(){
         this.container = document.createElement('div');
         switch (this.keyValue.type) {
+        case 'delete':
+            this.createKeyNode('delete', 'delete');
+            break;
         case 'shift': 
             this.createKeyNode('shift', 'shift');
             break;
@@ -132,37 +136,85 @@ class Key {
         }
 
 
-        this.container.addEventListener('click',  () => this.onKeyHandler());
+        this.container.addEventListener('click',  () => {
+            this.onKeyHandler();
+            this.textField.focus();
+        });
         
         return this.container;
     }
         
     onKeyHandler(){
+        let currantCaretPosition = this.textField.selectionStart;
+        let outputText =  this.textField.value;
         switch (this.keyValue.type){
         case 'general':
             let shift = document.querySelector('.shift');
             let capsLock = document.querySelector('.caps-lock')
+            let charToInsert = '';
+            
             if(this.language === 'eng') {
                 if(shift.classList.contains('active') || capsLock.classList.contains('active')){
-                    this.textField.value += this.keyValue.secondaryValueEng;
+                    charToInsert = this.keyValue.secondaryValueEng;
                 } else {
-                    this.textField.value += this.keyValue.primaryValueEng;
+                    charToInsert = this.keyValue.primaryValueEng;
                 }
             } else {
                 if(shift.classList.contains('active') || capsLock.classList.contains('active')){
-                    this.textField.value += this.keyValue.secondaryValueRu;
+                    charToInsert = this.keyValue.secondaryValueRu;
                 } else {
-                    this.textField.value += this.keyValue.primaryValueRu;
+                    charToInsert = this.keyValue.primaryValueRu;
                 }
             }
+            this.textField.value = outputText.substring(0, currantCaretPosition) + charToInsert + outputText.substring(this.textField.selectionEnd);
+            currantCaretPosition += 1;
+            this.textField.selectionStart = currantCaretPosition;
+            this.textField.selectionEnd = currantCaretPosition;
             break;
+
         case 'shift':
             this.changeActiveState();
             break;
+
         case 'capsLock':
             this.changeActiveState();
             break;
+
+        case 'delete': 
+            this.textField.value = outputText.substring(0, currantCaretPosition - 1) + outputText.substring(currantCaretPosition);
+            currantCaretPosition -= 1;
+            this.textField.selectionStart = currantCaretPosition;
+            this.textField.selectionEnd = currantCaretPosition;
+            break;
+
+        case 'rightArrow':
+            this.textField.selectionStart = currantCaretPosition + 1;
+            this.textField.selectionEnd = currantCaretPosition + 1;
+            break;
+
+        case 'leftArrow': 
+            this.textField.selectionStart = currantCaretPosition - 1;
+            this.textField.selectionEnd = currantCaretPosition - 1;
+            break;
+
+        case 'topArrow':
+            if(outputText.substring(0, currantCaretPosition).lastIndexOf('\n', ) !== -1){
+                this.textField.selectionStart = outputText.substring(0, currantCaretPosition).lastIndexOf('\n');
+                this.textField.selectionEnd = outputText.substring(0, currantCaretPosition).lastIndexOf('\n');
+                currantCaretPosition = this.textField.selectionStart;
+            }
+            break;
+        
+        case 'bottomArrow': 
+        if(outputText.indexOf('\n', currantCaretPosition) !== -1){
+            this.textField.selectionStart = outputText.indexOf('\n', currantCaretPosition) + 1;
+            this.textField.selectionEnd = outputText.indexOf('\n', currantCaretPosition) + 1;
+            currantCaretPosition = this.textField.selectionStart;
         }
+            break;
+        }
+        
+
     }
         
     changeActiveState(){
