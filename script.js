@@ -1,4 +1,8 @@
 window.onload = function(){
+    let description = document.createElement('p');
+    description.innerHTML = 'macOs keyboard, change language - shift + alt';
+    document.body.appendChild(description);
+
     let layout = [
         [
         {type: 'general', primaryValueEng: '`', secondaryValueEng: '~', primaryValueRu: ']', secondaryValueRu: '[', code: '192'}, 
@@ -82,6 +86,7 @@ window.onload = function(){
 
     keyDownHandler(layout);
     keyUpHandler();
+
 }
 
 class Key {
