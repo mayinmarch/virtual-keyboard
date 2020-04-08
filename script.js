@@ -451,6 +451,10 @@ window.onload = () => {
     ],
   ];
 
+  if (!window.localStorage.getItem('language')) {
+    window.localStorage.setItem('language', 'eng');
+  }
+
   const textField = createTextField();
   textField.focus();
   createKey(layout, textField);
